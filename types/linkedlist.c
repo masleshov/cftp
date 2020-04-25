@@ -24,12 +24,12 @@ node_t* create_node()
     return node;
 }
 
-linkedlist* linked_list_new()
+linkedlist* linkedlist_new()
 {
     return (linkedlist*)malloc(sizeof(linkedlist));
 }
 
-void linked_list_free(linkedlist* list)
+void linkedlist_free(linkedlist* list)
 {
     node_t* tmp;
     node_t* current = list->first;
@@ -42,12 +42,12 @@ void linked_list_free(linkedlist* list)
     free(list);
 }
 
-int linked_list_count(linkedlist* list)
+int linkedlist_count(linkedlist* list)
 {
     return list->count;
 }
 
-int linked_list_add_last(linkedlist* list, void* obj)
+int linkedlist_add_last(linkedlist* list, void* obj)
 {
     if(list == NULL) return -1;
 
@@ -69,7 +69,7 @@ int linked_list_add_last(linkedlist* list, void* obj)
     return 0;
 }
 
-int linked_list_add_first(linkedlist* list, void* obj)
+int linkedlist_add_first(linkedlist* list, void* obj)
 {
     if(list == NULL) return -1;
 
