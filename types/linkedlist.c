@@ -2,56 +2,59 @@
 #include "stddef.h"
 #include "linkedlist.h"
 
-typedef struct node 
+typedef struct linkedlist_node 
 {
     void*        val;
-    struct node* next;
-} node_t;
+    struct linkedlist_node* next;
+    struct linkedlist_node* prev;
+} linkedlist_node_t;
 
 typedef struct linkedlist
 {
-    node_t* first;
-    node_t* last;
-    int     count;
-} linkedlist;
+    linkedlist_node_t* first;
+    linkedlist_node_t* last;
+    linkedlist_node_t* current;
+    int              count;
+} linkedlist_t;
 
-node_t* create_node()
+linkedlist_node_t* create_node()
 {
-    node_t* node = (node_t*)malloc(sizeof(node_t));
+    linkedlist_node_t* node = (linkedlist_node_t*)malloc(sizeof(linkedlist_node_t));
     node->val = NULL;
     node->next = NULL;
+    node->prev = NULL;
 
     return node;
 }
 
-linkedlist* linkedlist_new()
+linkedlist_t* linkedlist_new()
 {
-    return (linkedlist*)malloc(sizeof(linkedlist));
+    return (linkedlist_t*)malloc(sizeof(linkedlist_t));
 }
 
-void linkedlist_free(linkedlist* list)
+void linkedlist_free(linkedlist_t* list)
 {
-    node_t* tmp;
-    node_t* current = list->first;
+    linkedlist_node_t* tmp;
+    linkedlist_node_t* current = list->first;
     while(current != NULL)
     {
         tmp = current;
         current = current->next;
-        free(current);
+        free(tmp);
     }
     free(list);
 }
 
-int linkedlist_count(linkedlist* list)
+int linkedlist_count(linkedlist_t* list)
 {
     return list->count;
 }
 
-int linkedlist_add_last(linkedlist* list, void* obj)
+int linkedlist_add_last(linkedlist_t* list, void* obj)
 {
     if(list == NULL) return -1;
 
-    node_t* node = create_node();
+    linkedlist_node_t* node = create_node();
     node->val = obj;
     
     if(list->count++ == 0)
@@ -61,6 +64,7 @@ int linkedlist_add_last(linkedlist* list, void* obj)
     else
     {
         list->last->next = node;
+        node->prev = list->last;
     }
     
 
@@ -69,11 +73,11 @@ int linkedlist_add_last(linkedlist* list, void* obj)
     return 0;
 }
 
-int linkedlist_add_first(linkedlist* list, void* obj)
+int linkedlist_add_first(linkedlist_t* list, void* obj)
 {
     if(list == NULL) return -1;
 
-    node_t* node = create_node();
+    linkedlist_node_t* node = create_node();
     node->val = obj;
 
     if(list->count++ == 0)
@@ -84,9 +88,40 @@ int linkedlist_add_first(linkedlist* list, void* obj)
     {
         node->next = list->first;
     }
-    
 
     list->first = node;
 
     return 0;
+}
+
+void* linkedlist_get_next(linkedlist_t* list)
+{
+    if(list->count == 0) return NULL;
+
+    if(list->current == NULL)
+    {
+        list->current = list->first;
+    }
+    else
+    {
+        list->current = list->current->next;
+    }
+    
+    return list->current->val;
+}
+
+void* linkedlist_get_prev(linkedlist_t* list)
+{
+    if(list->count == 0) return NULL;
+
+    if(list->current == NULL)
+    {
+        list->current = list->last;
+    }
+    else
+    {
+        list->current = list->current->prev;
+    }
+
+    return list->current->val;    
 }
