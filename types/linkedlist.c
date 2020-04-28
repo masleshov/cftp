@@ -4,7 +4,7 @@
 
 typedef struct linkedlist_node 
 {
-    void*        val;
+    void*                   val;
     struct linkedlist_node* next;
     struct linkedlist_node* prev;
 } linkedlist_node_t;
@@ -17,7 +17,7 @@ typedef struct linkedlist
     int              count;
 } linkedlist_t;
 
-linkedlist_node_t* create_node()
+linkedlist_node_t* linkedlist_node_new()
 {
     linkedlist_node_t* node = (linkedlist_node_t*)malloc(sizeof(linkedlist_node_t));
     node->val = NULL;
@@ -54,7 +54,7 @@ int linkedlist_add_last(linkedlist_t* list, void* obj)
 {
     if(list == NULL) return -1;
 
-    linkedlist_node_t* node = create_node();
+    linkedlist_node_t* node = linkedlist_node_new();
     node->val = obj;
     
     if(list->count++ == 0)
@@ -77,7 +77,7 @@ int linkedlist_add_first(linkedlist_t* list, void* obj)
 {
     if(list == NULL) return -1;
 
-    linkedlist_node_t* node = create_node();
+    linkedlist_node_t* node = linkedlist_node_new();
     node->val = obj;
 
     if(list->count++ == 0)
@@ -92,6 +92,28 @@ int linkedlist_add_first(linkedlist_t* list, void* obj)
     list->first = node;
 
     return 0;
+}
+
+int linkedlist_add_before(linkedlist_t* list, int index, void* obj)
+{
+    linkedlist_node_t* current = list->first;
+    int i = 0;
+    while(current != NULL)
+    {
+        if(i++ == index)
+        {
+            linkedlist_node_t* node = linkedlist_node_new();
+            node->val = obj;
+            node->prev = current->prev;
+            node->next = current;
+
+            current->prev->next = node;
+            current->prev = node;
+            return 0; 
+        }
+    }
+
+    return -1;
 }
 
 void* linkedlist_get_next(linkedlist_t* list)

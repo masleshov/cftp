@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "linkedlist.h": "c"
+        "linkedlist.h": "c",
+        "istream": "c",
+        "ostream": "c",
+        "tuple": "c",
+        "sstream": "c"
     }
 }

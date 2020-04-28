@@ -1,3 +1,4 @@
+#include "string.h"
 #include "stddef.h"
 #include "stdint.h"
 #include "linkedlist.h"
@@ -5,34 +6,43 @@
 
 typedef struct hashtable_entry
 {
-    void* key;
+    char* key;
     void* val;
 } hashtable_entry_t;
 
 typedef struct hashtable
 {
-    intptr_t original;
     linkedlist_t* buckets[10];
 } hashtable_t;
 
-int get_hash(intptr_t key, int buckets_count)
+// Dan Bernstein algorithm: http://www.cse.yorku.ca/~oz/hash.html
+int get_hash(unsigned char* key, int buckets_count)
 {
-    if(buckets_count == 0)
-    {
-        return key;
-    }
+    unsigned long hash = 5381;
+    int c;
 
-    return key%buckets_count;
+    while (c = *key++)
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+
+    return hash%buckets_count;
 }
 
 hashtable_t* hashtable_new()
 {
     hashtable_t* table = malloc(sizeof(hashtable_t));
-    table->original = table->buckets;
     return table;
 }
 
-HashTableResult hashtable_add(hashtable_t* table, void* key, void* obj, key_comparer_t comparer)
+hashtable_entry_t* hashtable_entry_new(char* key, void* obj)
+{
+    hashtable_entry_t* entry = malloc(sizeof(hashtable_entry_t));
+    entry->key = key;
+    entry->val = obj;
+
+    return entry;
+}
+
+HashTableResult hashtable_add(hashtable_t* table, char* key, void* obj)
 {
     int bucket = get_hash(&key, 10);
     if(table->buckets[bucket] == NULL)
@@ -40,24 +50,43 @@ HashTableResult hashtable_add(hashtable_t* table, void* key, void* obj, key_comp
         table->buckets[bucket] = linkedlist_new();
     }
 
-    hashtable_entry_t* current;
-    while((current = linkedlist_get_next(table->buckets)) != NULL)
+    int listcnt = linkedlist_count(table->buckets[bucket]);
+    if(listcnt == 0)
     {
-        if(comparer(key, current->key))
+        hashtable_entry_t* entry = hashtable_entry_new(key, obj);
+        linkedlist_add_first(table->buckets[bucket], entry);
+        return SUCCESS;
+    }
+
+    hashtable_entry_t* current;
+    int index = 0;
+    while((current = linkedlist_get_next(table->buckets[bucket])) != NULL)
+    {
+        int result = strcmp(key, current->key);
+        if(result == 0) 
         {
             return ALREADY_EXISTS;
         }
+        else if(result < 0)
+        {
+            hashtable_entry_t* entry = hashtable_entry_new(key, obj);
+            linkedlist_add_before(table->buckets[bucket], index, entry);
+            return SUCCESS;
+        }
+        else if(index == (listcnt - 1)) // current is last object in linked list
+        {
+            hashtable_entry_t* entry = hashtable_entry_new(key, obj);
+            linkedlist_add_last(table->buckets[bucket], entry);
+            return SUCCESS;
+        }
+
+        index++;
     }
 
-    current = malloc(sizeof(hashtable_entry_t));
-    current->key = key;
-    current->val = obj;
-    linkedlist_add_first(table->buckets[bucket], current);
-
-    return SUCCESS;
+    return UNKNOWN_ERROR;
 }
 
-void* hashtable_get(hashtable_t* table, void* key, key_comparer_t comparer)
+void* hashtable_get(hashtable_t* table, char* key)
 {
     int bucket = get_hash(&key, 10);
     if(table->buckets[bucket] == NULL)
@@ -68,7 +97,7 @@ void* hashtable_get(hashtable_t* table, void* key, key_comparer_t comparer)
     hashtable_entry_t* current;
     while((current = linkedlist_get_next(table->buckets[bucket])) != NULL)
     {
-        if(comparer(key, current->key))
+        if(strcmp(key, current->key) == 0)
         {
             return current->val;
         }
