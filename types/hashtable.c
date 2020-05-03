@@ -4,6 +4,8 @@
 #include "linkedlist.h"
 #include "hashtable.h"
 
+#define TABLE_SIZE 10
+
 typedef struct hashtable_entry
 {
     char* key;
@@ -12,7 +14,7 @@ typedef struct hashtable_entry
 
 typedef struct hashtable
 {
-    linkedlist_t* buckets[10];
+    linkedlist_t* buckets[TABLE_SIZE];
 } hashtable_t;
 
 // Dan Bernstein algorithm: http://www.cse.yorku.ca/~oz/hash.html
@@ -33,6 +35,17 @@ hashtable_t* hashtable_new()
     return table;
 }
 
+void hashtable_free(hashtable_t* table)
+{
+    for(int i = 0; i < TABLE_SIZE; i++)
+    {
+        linkedlist_free(table->buckets[i]);
+    }
+
+    free(table->buckets);
+    free(table);
+}
+
 hashtable_entry_t* hashtable_entry_new(char* key, void* obj)
 {
     hashtable_entry_t* entry = malloc(sizeof(hashtable_entry_t));
@@ -44,7 +57,7 @@ hashtable_entry_t* hashtable_entry_new(char* key, void* obj)
 
 HashTableResult hashtable_add(hashtable_t* table, char* key, void* obj)
 {
-    int bucket = get_hash(&key, 10);
+    int bucket = get_hash(&key, TABLE_SIZE);
     if(table->buckets[bucket] == NULL)
     {
         table->buckets[bucket] = linkedlist_new();
@@ -88,7 +101,7 @@ HashTableResult hashtable_add(hashtable_t* table, char* key, void* obj)
 
 void* hashtable_get(hashtable_t* table, char* key)
 {
-    int bucket = get_hash(&key, 10);
+    int bucket = get_hash(&key, TABLE_SIZE);
     if(table->buckets[bucket] == NULL)
     {
         return NULL;
