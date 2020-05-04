@@ -1,6 +1,8 @@
-#include "string.h"
-#include "stddef.h"
-#include "stdint.h"
+#include <string.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <limits.h>
+#include "primes.h"
 #include "linkedlist.h"
 #include "hashtable.h"
 

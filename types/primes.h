@@ -1,0 +1,1 @@
+int get_prime(int last);
